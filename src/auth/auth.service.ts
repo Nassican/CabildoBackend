@@ -45,7 +45,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const payload = { num_documento: user.num_documento, role: user.role};
+        const payload = { num_documento: user.num_documento, role: user.roles};
         const token = await this.jwtService.signAsync(payload);
 
         user.password = undefined;
@@ -64,13 +64,7 @@ export class AuthService {
         
     }
 
-    async profile({ num_documento, role}: { num_documento: string, role: string}) {
-
-        // if (role !== 'admin') {
-        //     throw new UnauthorizedException(
-        //         'You do not have permission to perform this action'
-        //     );
-        // }
+    async profile({ num_documento, roles}: { num_documento: string, roles: string[]}) {
 
         const userDB = await this.usersService.findOneByNumDoc(num_documento);
 

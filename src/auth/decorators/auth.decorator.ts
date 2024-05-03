@@ -1,13 +1,12 @@
-import { applyDecorators, UseGuards } from "@nestjs/common";
-import { Role } from "../enums/rol.enum";
-import { Roles, ROLES_KEY } from "./roles.decorator";
+import { applyDecorators, Res, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "../guard/auth.guard";
-import { RolesGuard } from "../guard/roles.guard";
+import { ResourceGuard } from "../guard/resource.guard";
+import { Resource } from "./resource.decorator";
 
 
-export function Auth(...role: Role[]) {
+export function Auth(name: string) {
   return applyDecorators(
-    Roles(...role),
-    UseGuards(AuthGuard, RolesGuard)
+    Resource(name),
+    UseGuards(AuthGuard, ResourceGuard)
   );
 }

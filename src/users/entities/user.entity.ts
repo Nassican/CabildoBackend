@@ -1,4 +1,5 @@
-import { Column, DeleteDateColumn, Entity, PrimaryGeneratedColumn} from 'typeorm';
+import { Role } from 'src/roles/entities/role.entity';
+import { Column, DeleteDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn} from 'typeorm';
 
 @Entity('usuarios_credenciales')
 export class User {
@@ -20,8 +21,9 @@ export class User {
     @Column({nullable: true})
     huella_digital: BinaryType;
 
-    @Column({default: 'user'})
-    role: string;
+    @JoinTable({ name: 'usuarios_credenciales_roles' })
+    @ManyToMany(() => Role, role => role.users, { cascade: true })
+    roles: Role[];
 
     @DeleteDateColumn()
     deletedAt: Date;
