@@ -26,14 +26,13 @@ export class AuthService {
             password: hashedPassword
         })
 
-        delete userDB.password;
-        delete userDB.huella_digital;
+        userDB.password = undefined;
 
         return userDB;
     }
 
     async login(loginUserDto: LoginUserDto) {
-        const user = await this.usersService.findOneByNumDoc(loginUserDto.num_documento);
+        const user = await this.usersService.findOneByIdWithPassword(loginUserDto.num_documento);
         
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
@@ -47,9 +46,6 @@ export class AuthService {
 
         const payload = { num_documento: user.num_documento, role: user.roles};
         const token = await this.jwtService.signAsync(payload);
-
-        user.password = undefined;
-        user.huella_digital = undefined;
 
         return {
             ...user,
@@ -65,12 +61,7 @@ export class AuthService {
     }
 
     async profile({ num_documento, roles}: { num_documento: string, roles: string[]}) {
-
         const userDB = await this.usersService.findOneByNumDoc(num_documento);
-
-        userDB.password = undefined;
-        userDB.huella_digital = undefined;
-
         return userDB;
     }
 

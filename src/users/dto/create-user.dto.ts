@@ -4,11 +4,11 @@ import z from "zod";
 
 // make a class validator using zod
 const zCreateUserDto = z.object({
-    num_documento: z.string(),
-    nombres: z.string(),
-    apellidos: z.string(),
-    password: z.string(),
-    roles: z.array(z.string())
+    num_documento: z.string().trim(),
+    nombres: z.string().trim(),
+    apellidos: z.string().trim(),
+    password: z.string().trim(),
+    roles: z.array(z.string().trim())
 });
 
 export class CreateUserDto {

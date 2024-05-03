@@ -12,6 +12,6 @@ export class Role {
     @Column()
     resources: string;
 
-    @ManyToMany(() => User, users => users.roles)
+    @ManyToMany(() => User, users => users.roles, )
     users: User[];
 }

@@ -3,8 +3,8 @@ import { UsersService } from './users.service';
 import { Resource } from 'src/auth/decorators/resource.decorator';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { ResourceGuard } from 'src/auth/guard/resource.guard';
-import 'src/auth/enums/resource.enum'
-import { Recursos } from 'src/auth/enums/resource.enum';
+import 'src/common/resource.enum'
+import { Recursos } from 'src/common/resource.enum';
 
 @Controller('users')
 export class UsersController {

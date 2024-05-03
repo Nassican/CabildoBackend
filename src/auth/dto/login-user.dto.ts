@@ -5,15 +5,13 @@ import z from "zod";
 // make a class validator using zod
 const zLoginUserDto = z.object({
     num_documento: z.string().max(10),
-    password: z.string()
+    password: z.string().trim(),
 });
 
 export class LoginUserDto {
-    @Transform(({ value }) => value.trim())
     @IsString()
     num_documento: string;
 
-    @Transform(({value}) => value.trim())
     @IsString()
     password: string;
 }

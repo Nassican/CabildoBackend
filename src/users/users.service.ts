@@ -47,7 +47,14 @@ export class UsersService {
   }
 
   async findOneByNumDoc(num_documento: string): Promise<User> {
-    return this.userRepository.findOneBy({ num_documento });
+    return this.userRepository.findOneBy({ num_documento: num_documento});
+  }
+
+  async findOneByIdWithPassword(num_documento: string): Promise<User> {
+    return this.userRepository.findOne({
+      where: { num_documento: num_documento},
+      select: ['id_usuario', 'num_documento', 'nombres', 'apellidos','password']
+    });
   }
 
   // TODO: Quitar luego

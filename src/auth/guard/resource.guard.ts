@@ -37,12 +37,15 @@ export class ResourceGuard implements CanActivate {
             return false;
           }
 
+          //console.log('User', user);
           let resources = user.roles.map(role => {
             console.log('Role', role.resources);
             return JSON.parse(role.resources);
           })
 
+          //console.log('Resources', resources);
           let permissions = _.unique(_.flatten(resources));
+          //console.log('Permissions', permissions);
           return permissions.includes(resource);
 
         }).catch(err => {

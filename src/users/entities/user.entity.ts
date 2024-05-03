@@ -15,14 +15,14 @@ export class User {
     @Column()
     apellidos: string;
 
-    @Column({nullable: false})
+    @Column({nullable: false, select: false})
     password: string;
 
-    @Column({nullable: true})
+    @Column({nullable: true, select: false})
     huella_digital: BinaryType;
 
     @JoinTable({ name: 'usuarios_credenciales_roles' })
-    @ManyToMany(() => Role, role => role.users, { cascade: true })
+    @ManyToMany(() => Role, role => role.users, {cascade: true})
     roles: Role[];
 
     @DeleteDateColumn()

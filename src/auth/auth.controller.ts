@@ -4,8 +4,10 @@ import { RegisterUserDto, ValidateRegisterUserDto } from './dto/register-user.dt
 import { LoginUserDto, ValidateLoginUserDto } from './dto/login-user.dto';
 import { RequestWithUser } from './interface/auth.interface';
 import { Auth } from './decorators/auth.decorator';
-import { Recursos } from './enums/resource.enum';
+import { Recursos } from '../common/resource.enum';
 import { AuthGuard } from './guard/auth.guard';
+import { Resource } from './decorators/resource.decorator';
+import { ResourceGuard } from './guard/resource.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -46,8 +48,7 @@ export class AuthController {
     // }
 
     @Get('profile')
-    // @Resource('profile')
-    @Auth(Recursos.list_user)
+    @Auth(Recursos.PROFILE)
     profile(
         @Req() req: RequestWithUser
     ) {
