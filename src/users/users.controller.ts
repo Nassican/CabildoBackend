@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Resource } from 'src/auth/decorators/resource.decorator';
-import { AuthGuard } from 'src/auth/guard/auth.guard';
-import { ResourceGuard } from 'src/auth/guard/resource.guard';
-import 'src/common/resource.enum'
-import { Recursos } from 'src/common/resource.enum';
+import { Resource } from '../auth/decorators/resource.decorator';
+import { AuthGuard } from '../auth/guard/auth.guard';
+import { ResourceGuard } from '../auth/guard/resource.guard';
+import '../common/enum/resource.enum'
+import { Recursos } from '../common/enum/resource.enum';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { ActiveUser } from 'src/common/decorators/active-user.decorator';
+import { ActiveUserInterface } from 'src/common/interfaces/active-user.interface';
 
 @Controller('users')
 export class UsersController {
@@ -19,9 +22,9 @@ export class UsersController {
   }
 
   @Get()
-  @Resource(Recursos.PROFILE)
-  @UseGuards(AuthGuard, ResourceGuard)
+  @Auth(Recursos.USERS)
   async findAll() {
+    console.log('Entro a findAll');
     return this.usersService.findAll();
   }
 

@@ -4,7 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { Repository } from 'typeorm';
 import * as _ from 'underscore'
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 
 @Injectable()
@@ -22,10 +22,10 @@ export class ResourceGuard implements CanActivate {
 
     try {
       const resource = this.reflector.get('resource', context.getHandler());
-      console.log('Resource', resource);
+      //console.log('Resource', resource);
 
       const req = context.switchToHttp().getRequest();
-      console.log('Request', req.user);
+      //console.log('Request', req.user);
 
       
       if (resource) {
@@ -37,9 +37,14 @@ export class ResourceGuard implements CanActivate {
             return false;
           }
 
-          //console.log('User', user);
+          // Si el rol es admin, se le permite todo
+          // if (user.roles.some(role => role.name === 'admin')) {
+          //   console.log('Usuario admin autorizado');
+          //   return true;
+          // }
+
           let resources = user.roles.map(role => {
-            console.log('Role', role.resources);
+            //console.log('Role', role.resources);
             return JSON.parse(role.resources);
           })
 

@@ -35,17 +35,21 @@ export class AuthService {
         const user = await this.usersService.findOneByIdWithPassword(loginUserDto.num_documento);
         
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Credenciales Invalidas');
         }
 
         const isPasswordValid = await bcrypt.compare(loginUserDto.password, user.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Credenciales Invalidas');
         }
 
         const payload = { num_documento: user.num_documento, role: user.roles};
         const token = await this.jwtService.signAsync(payload);
+
+        user.password = undefined;
+
+        console.log(user);
 
         return {
             ...user,

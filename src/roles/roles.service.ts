@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { FindOneOptions, Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
 
@@ -21,6 +21,17 @@ export class RolesService {
 
   async findAll() {
     return this.roleRepository.find({});
+  }
+
+  async setRoleDefault() {
+    const defaultRole = await this.roleRepository.findOne({
+      where: { name: 'default' },
+    });
+    if (!defaultRole) {
+      throw new NotFoundException('Default role not found');
+    }
+
+    return defaultRole;
   }
 
   async findOneByNameRole(name: string): Promise<Role> {

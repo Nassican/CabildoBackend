@@ -4,10 +4,12 @@ import { RegisterUserDto, ValidateRegisterUserDto } from './dto/register-user.dt
 import { LoginUserDto, ValidateLoginUserDto } from './dto/login-user.dto';
 import { RequestWithUser } from './interface/auth.interface';
 import { Auth } from './decorators/auth.decorator';
-import { Recursos } from '../common/resource.enum';
+import { Recursos } from '../common/enum/resource.enum';
 import { AuthGuard } from './guard/auth.guard';
 import { Resource } from './decorators/resource.decorator';
 import { ResourceGuard } from './guard/resource.guard';
+import { ActiveUser } from '../common/decorators/active-user.decorator';
+import { ActiveUserInterface } from '../common/interfaces/active-user.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -49,11 +51,8 @@ export class AuthController {
 
     @Get('profile')
     @Auth(Recursos.PROFILE)
-    profile(
-        @Req() req: RequestWithUser
-    ) {
-        console.log(req.user);
-        return this.AuthService.profile(req.user);
+    profile(@ActiveUser() user: ActiveUserInterface) {
+        return this.AuthService.profile(user);
     }
 
 }

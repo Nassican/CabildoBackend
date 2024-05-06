@@ -19,7 +19,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const {roles, ...dataInsert} = createUserDto;
 
-    console.log('Roles', roles);
+    //console.log('Roles', roles);
 
     let rolesUser = await Promise.all(
       roles.map(async (role) => {
@@ -34,7 +34,8 @@ export class UsersService {
     //console.log('RolesUser after filter', rolesUser);
 
     if (rolesUser.length === 0) {
-      throw new BadRequestException('Roles not found');
+      rolesUser = [await this.rolesService.setRoleDefault()];
+      //console.log('RolesUser after set default', rolesUser);
     }
 
     let userToSave = this.userRepository.create({
