@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsArray, IsString, MaxLength } from "class-validator";
+import { IsArray, IsNumber, IsString, MaxLength } from "class-validator";
 import z from "zod";
 
 // make a class validator using zod
@@ -8,7 +8,7 @@ const zRegisterUserDto = z.object({
     nombres: z.string(),
     apellidos: z.string(),
     password: z.string(),
-    roles: z.array(z.string())
+    rolesIds: z.array(z.number())
 });
 
 export class RegisterUserDto {
@@ -28,10 +28,12 @@ export class RegisterUserDto {
     password: string;
 
     @IsArray()
-    roles: string[];
+    @IsNumber({}, { each: true })
+    rolesIds: number[];
 }
 
 export const ValidateRegisterUserDto = (data: RegisterUserDto) => {
+    console.log('Data', data);
     const result = zRegisterUserDto.safeParse(data);
     return result;
 }

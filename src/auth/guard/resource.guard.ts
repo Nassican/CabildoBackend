@@ -43,22 +43,18 @@ export class ResourceGuard implements CanActivate {
       if (resource) {
         return this.userRepo.findOne({
           where: { num_documento: req.user.num_documento },
-          relations: ['roles'],
+          relations: ['roles', 'roles.roleRecursos', 'roles.roleRecursos.recurso'],
         }).then(user => {
           if (!(user instanceof User)) {
             return false;
           }
-
-          let resources = user.roles.map(role => {
-            //console.log('Role', role.resources);
-            return JSON.parse(role.resources);
-          })
-
-          //console.log('Resources', resources);
-          let permissions = _.unique(_.flatten(resources));
-          //console.log('Permissions', permissions);
-          return permissions.includes(resource);
-
+    
+          let recursos = user.roles.flatMap(role => {
+            return role.roleRecursos.map(roleRecurso => roleRecurso.recurso.nombre_recurso);
+          });
+    
+          console.log('ResourceGuard. Recursos del usuario', recursos);
+          return recursos.includes(resource);
         }).catch(err => {
           console.log('Failed to find user', err);
           return false;

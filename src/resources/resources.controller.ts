@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ResourcesService } from './resources.service';
-import { CreateResourceDto } from './dto/create-resource.dto';
+import { CreateResourceDto, ValidateCreateResourceDto } from './dto/create-resource.dto';
 import { UpdateResourceDto } from './dto/update-resource.dto';
 
 @Controller('resources')
@@ -8,8 +8,12 @@ export class ResourcesController {
   constructor(private readonly resourcesService: ResourcesService) {}
 
   @Post()
-  create(@Body() createResourceDto: CreateResourceDto) {
-    return this.resourcesService.create(createResourceDto);
+  create(@Body() createResourceDto: CreateResourceDto) {  
+    const validation = ValidateCreateResourceDto(createResourceDto);
+    if (!validation.success) {
+      throw new Error(validation.error.message);
+    }
+    return this.resourcesService.createRecurso(createResourceDto);
   }
 
   @Get()

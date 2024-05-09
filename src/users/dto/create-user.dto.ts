@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsArray, IsString } from "class-validator";
+import { IsArray, IsNumber, IsString } from "class-validator";
 import z from "zod";
 
 // make a class validator using zod
@@ -8,7 +8,7 @@ const zCreateUserDto = z.object({
     nombres: z.string().trim(),
     apellidos: z.string().trim(),
     password: z.string().trim(),
-    roles: z.array(z.string().trim())
+    roles: z.array(z.number())
 });
 
 export class CreateUserDto {
@@ -29,8 +29,8 @@ export class CreateUserDto {
     password: string;
 
     @IsArray()
-    @Transform(({ value }) => value.trim())
-    roles: string[];
+    @IsNumber({}, { each: true }) // Validar que cada elemento sea un número
+    rolesIds: number[];
 }
 
 export const ValidateCreateUserDto = (data: CreateUserDto) => {

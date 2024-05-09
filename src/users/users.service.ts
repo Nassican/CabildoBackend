@@ -17,33 +17,23 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const {roles, ...dataInsert} = createUserDto;
+    const {rolesIds, ...dataInsert} = createUserDto;
 
-    //console.log('Roles', roles);
+    //console.log('RolesIds', rolesIds);
 
-    let rolesUser = await Promise.all(
-      roles.map(async (role) => {
-        return this.rolesService.findOneByNameRole(role);
-      })
-    );
+    const rolesUser = await this.rolesService.findByIds(rolesIds);
 
-    //console.log('RolesUser before filter', rolesUser);
-
-    rolesUser = rolesUser.filter(role => role);
-
-    //console.log('RolesUser after filter', rolesUser);
-
-    if (rolesUser.length === 0) {
-      rolesUser = [await this.rolesService.setRoleDefault()];
-      //console.log('RolesUser after set default', rolesUser);
+    if (!rolesUser || rolesUser.length === 0) {
+      throw new BadRequestException('Roles no encontrados');
     }
+
+    //console.log('RolesUser', rolesUser);
 
     let userToSave = this.userRepository.create({
       ...dataInsert,
-      roles: rolesUser
+      roles: rolesUser,
     });
-
-
+  
     return this.userRepository.save(userToSave);
   }
 
