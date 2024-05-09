@@ -3,17 +3,19 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants/jwt.constant';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SuperadminModule } from '../superadmin/superadmin.module';
+import { SuperAdmin } from '../superadmin/entities/superadmin.entity';
 
 @Module({
   imports: [
     PassportModule,
     ConfigModule,
     TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([SuperAdmin]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -25,6 +27,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
     }),
     UsersModule,
+    SuperadminModule
   ],
   controllers: [AuthController],
   providers: [AuthService],

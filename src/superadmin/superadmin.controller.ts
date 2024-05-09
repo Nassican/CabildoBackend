@@ -1,34 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Put, UseGuards} from '@nestjs/common';
 import { SuperadminService } from './superadmin.service';
-import { CreateSuperadminDto } from './dto/create-superadmin.dto';
-import { UpdateSuperadminDto } from './dto/update-superadmin.dto';
+import { SoloSuperadminGuard } from './guard/solo-superadmin.guard';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { SoloSuperAdmin } from './decorators/superadmin.decorator';
 
 @Controller('superadmin')
 export class SuperadminController {
   constructor(private readonly superadminService: SuperadminService) {}
 
-  @Post()
-  create(@Body() createSuperadminDto: CreateSuperadminDto) {
-    return this.superadminService.create(createSuperadminDto);
+  @SoloSuperAdmin()
+  @Put('assign/:userId')
+  async assignSuperadminRole(@Param('userId') userId: number) {
+    return this.superadminService.assignSuperadminRole(userId);
   }
 
+  @SoloSuperAdmin()
+  @Put('remove/:userId')
+  async removeSuperadminRole(@Param('userId') userId: number) {
+    return this.superadminService.removeSuperadminRole(userId);
+  }
+
+  @SoloSuperAdmin()
   @Get()
-  findAll() {
+  async findAll() {
     return this.superadminService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.superadminService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSuperadminDto: UpdateSuperadminDto) {
-    return this.superadminService.update(+id, updateSuperadminDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.superadminService.remove(+id);
   }
 }
