@@ -8,7 +8,7 @@ const zCreateUserDto = z.object({
     nombres: z.string().trim(),
     apellidos: z.string().trim(),
     password: z.string().trim(),
-    roles: z.array(z.number())
+    rolesIds: z.array(z.number())
 });
 
 export class CreateUserDto {

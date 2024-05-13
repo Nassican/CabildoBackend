@@ -11,7 +11,7 @@ export class Role {
     name: string;
 
     @OneToMany(() => RoleRecurso, roleRecurso => roleRecurso.role)
-     roleRecursos: RoleRecurso[];
+    roleRecursos: RoleRecurso[];
 
     @ManyToMany(() => User, users => users.roles, )
     users: User[];

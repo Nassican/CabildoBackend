@@ -24,6 +24,17 @@ export class RolesService {
 
   async create(createRoleDto: CreateRoleDto) {
     let role = this.roleRepository.create(createRoleDto);
+    
+    role.name = role.name.toLowerCase();
+
+    const roleExists = await this.roleRepository.findOne({
+      where: { name: role.name },
+    });
+
+    if (roleExists) {
+      throw new BadRequestException('Rol ya existe');
+    }
+
     return this.roleRepository.save(role);
   }
 
@@ -129,6 +140,20 @@ export class RolesService {
   }
 
   async remove(id: number) {
-    return `This action removes a #${id} role`;
+    // Eliminar el rol
+    const role = await this.roleRepository.findOne({
+      where: { id },
+    });
+    if (!role) {
+      throw new NotFoundException('Rol no encontrado');
+    }
+    
+    await this.roleRepository.remove(role);
+
+    // Enviar mensaje de exito
+    return {
+      message: 'Rol eliminado correctamente',
+    };
+    
   }
 }

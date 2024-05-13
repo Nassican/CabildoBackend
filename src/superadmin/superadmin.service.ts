@@ -54,6 +54,11 @@ export class SuperadminService {
   }
 
   async findAll(): Promise<SuperAdmin[]> {
-    return this.superadminRepository.find();
+    const superadmins = await this.superadminRepository.find({
+      relations: ['user'],
+    });
+
+    return superadmins;
   }
+  
 }

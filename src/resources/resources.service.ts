@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateResourceDto, ValidateCreateResourceDto } from './dto/create-resource.dto';
 import { UpdateResourceDto } from './dto/update-resource.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +14,17 @@ export class ResourcesService {
 
   async createRecurso(createResourceDto: CreateResourceDto): Promise<Recurso> {
     const nuevoRecurso = this.recursoRepository.create(createResourceDto);
+    
+    nuevoRecurso.nombre_recurso = nuevoRecurso.nombre_recurso.toLowerCase();
+    
+    const nuevoRecursoExists = await this.recursoRepository.findOne({
+      where: { nombre_recurso: nuevoRecurso.nombre_recurso },
+    });
+
+    if (nuevoRecursoExists) {
+      throw new BadRequestException('Recurso ya existe');
+    }
+
     return this.recursoRepository.save(nuevoRecurso);
   }
 
@@ -29,8 +40,21 @@ export class ResourcesService {
     return `This action updates a #${id} resource`;
   }
 
-  remove(id: number) {
-    // Remove the resource with the id provided
-    return this.recursoRepository.delete(id);
+  async remove(id: number) {
+    // Remover el recurso usando la id, pero si la id esta usada en algun rol, no se puede remover
+    
+    const recurso = await this.recursoRepository.find({where: {id: id}});
+
+    console.log('Recurso', recurso);
+
+    if (!recurso.length) {
+      throw new BadRequestException('Recurso no encontrado');
+    }
+
+    try {
+      await this.recursoRepository.delete(id);
+    } catch (error) {
+      throw new BadRequestException('Recurso no puede ser eliminado');
+    }
   }
 }

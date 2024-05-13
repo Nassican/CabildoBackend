@@ -2,10 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/
 import { RolesService } from './roles.service';
 import { CreateRoleDto, ValidateCreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AsignarRecursoARolDto, ValidateAsignarRecursoARolDto } from './dto/asign-resource-to-rol.dto';
 
 @ApiTags('Roles')
+@ApiBearerAuth()
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
@@ -40,7 +41,7 @@ export class RolesController {
     return this.rolesService.findAll();
   }
 
-  @Get(':id')
+  @Get('id/:id')
   findOne(@Param('id') id: string) {
     return this.rolesService.findOne(+id);
   }
