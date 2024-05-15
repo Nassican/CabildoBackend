@@ -5,7 +5,7 @@ import { AuthGuard } from '../auth/guard/auth.guard';
 import { ResourceGuard } from '../auth/guard/resource.guard';
 import '../common/enum/resource.enum'
 import { Recursos } from '../common/enum/resource.enum';
-import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Auth } from '../auth/decorators/auth.decorator';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { ActiveUserInterface } from 'src/common/interfaces/active-user.interface';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -32,7 +32,7 @@ export class UsersController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard)
+  @Auth(Recursos.PROFILE)
   async findMe(@ActiveUser() user: ActiveUserInterface) {
     return this.usersService.findOneByNumDoc(user.num_documento);
   }

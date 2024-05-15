@@ -15,7 +15,7 @@ export class ResourcesService {
   async createRecurso(createResourceDto: CreateResourceDto): Promise<Recurso> {
     const nuevoRecurso = this.recursoRepository.create(createResourceDto);
     
-    nuevoRecurso.nombre_recurso = nuevoRecurso.nombre_recurso.toLowerCase();
+    nuevoRecurso.nombre_recurso = nuevoRecurso.nombre_recurso.toLowerCase().trim();
     
     const nuevoRecursoExists = await this.recursoRepository.findOne({
       where: { nombre_recurso: nuevoRecurso.nombre_recurso },
@@ -36,8 +36,38 @@ export class ResourcesService {
     return this.recursoRepository.findOne({where: {id: idRecurso} });
   }
 
-  update(id: number, updateResourceDto: UpdateResourceDto) {
-    return `This action updates a #${id} resource`;
+  async update(updateResourceDto: UpdateResourceDto) {
+
+    const { id, ...dataUpdate } = updateResourceDto;
+
+    const recurso = await this.recursoRepository.findOne({where: {id: id}});
+
+    if (!dataUpdate.nombre_recurso) {
+      throw new BadRequestException('Nombre de recurso no puede ser vacio');
+    }
+
+    if (!recurso) {
+      throw new BadRequestException('Recurso no encontrado');
+    }
+    
+    if (dataUpdate.nombre_recurso) {
+      dataUpdate.nombre_recurso = dataUpdate.nombre_recurso.toLowerCase().trim();
+      
+      const recursoExists = await this.recursoRepository.findOne({
+        where: { nombre_recurso: dataUpdate.nombre_recurso },
+      });
+      
+      if (recursoExists) {
+        throw new BadRequestException('Recurso ya existe');
+      }
+
+    }
+
+    if (dataUpdate.nombre_recurso === '') {
+      throw new BadRequestException('Nombre de recurso no puede ser vacio');
+    }
+    
+    return this.recursoRepository.update(id, dataUpdate);
   }
 
   async remove(id: number) {

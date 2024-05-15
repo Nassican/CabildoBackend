@@ -2,7 +2,7 @@ import { IsString, MaxLength, MinLength } from "class-validator";
 import { z } from "zod";
 
 const zCreateResourceDto = z.object({
-    nombre_recurso: z.string().min(1).max(255),
+    nombre_recurso: z.string().min(1).max(255).trim(),
 });
 
 export class CreateResourceDto {
