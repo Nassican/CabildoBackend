@@ -9,6 +9,7 @@ import { User } from '../users/entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SuperadminModule } from '../superadmin/superadmin.module';
 import { SuperAdmin } from '../superadmin/entities/superadmin.entity';
+import { jwtConfig } from '../config/jwt.config';
 
 @Module({
   imports: [
@@ -16,16 +17,7 @@ import { SuperAdmin } from '../superadmin/entities/superadmin.entity';
     ConfigModule,
     TypeOrmModule.forFeature([User]),
     TypeOrmModule.forFeature([SuperAdmin]),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>("JWT_SECRET"),
-        signOptions: { expiresIn: "1d" },
-        global: true,
-      }),
-      
-      inject: [ConfigService],
-    }),
+    JwtModule.registerAsync(jwtConfig),
     UsersModule,
     SuperadminModule
   ],
