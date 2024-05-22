@@ -1,6 +1,10 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { FindOneOptions, In, Repository } from 'typeorm';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { In, Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
 
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -23,8 +27,8 @@ export class RolesService {
   ) {}
 
   async create(createRoleDto: CreateRoleDto) {
-    let role = this.roleRepository.create(createRoleDto);
-    
+    const role = this.roleRepository.create(createRoleDto);
+
     role.name = role.name.toLowerCase();
 
     const roleExists = await this.roleRepository.findOne({
@@ -38,7 +42,6 @@ export class RolesService {
     return this.roleRepository.save(role);
   }
 
-  
   async setRoleDefault() {
     const defaultRole = await this.roleRepository.findOne({
       where: { name: 'default' },
@@ -46,7 +49,7 @@ export class RolesService {
     if (!defaultRole) {
       throw new NotFoundException('Default role not found');
     }
-    
+
     return defaultRole;
   }
 
@@ -58,7 +61,9 @@ export class RolesService {
     return roles;
   }
 
-  async asignarRecursosARol(asignarRecursoDto: AsignarRecursoARolDto): Promise<RoleRecurso[]> {
+  async asignarRecursosARol(
+    asignarRecursoDto: AsignarRecursoARolDto,
+  ): Promise<RoleRecurso[]> {
     const { rolId, recursosIds } = asignarRecursoDto;
     const rol = await this.roleRepository.findOne({
       where: { id: rolId },
@@ -70,11 +75,13 @@ export class RolesService {
       throw new NotFoundException('Rol no encontrado');
     }
 
-      // Obtener los IDs de los recursos ya asignados al rol
-    const recursosAsignadosIds = rol.roleRecursos.map(rr => rr.recurso.id);
+    // Obtener los IDs de los recursos ya asignados al rol
+    const recursosAsignadosIds = rol.roleRecursos.map((rr) => rr.recurso.id);
 
     // Filtrar los nuevos recursos que no están asignados al rol
-    const nuevosRecursosIds = recursosIds.filter(id => !recursosAsignadosIds.includes(id));
+    const nuevosRecursosIds = recursosIds.filter(
+      (id) => !recursosAsignadosIds.includes(id),
+    );
 
     // Obtener los objetos de los nuevos recursos a asignar
     const nuevosRecursos = await this.recursoRepository.find({
@@ -82,61 +89,82 @@ export class RolesService {
     });
 
     // Crear los nuevos objetos RoleRecurso
-    const nuevosRoleRecursos = nuevosRecursos.map(recurso => {
-      const roleRecurso = this.roleRecursoRepository.create({ role: rol, recurso: recurso });
+    const nuevosRoleRecursos = nuevosRecursos.map((recurso) => {
+      const roleRecurso = this.roleRecursoRepository.create({
+        role: rol,
+        recurso: recurso,
+      });
       return roleRecurso;
     });
 
     // Guardar los nuevos objetos RoleRecurso
-    const roleRecursosSaved = await this.roleRecursoRepository.save(nuevosRoleRecursos);
+    const roleRecursosSaved =
+      await this.roleRecursoRepository.save(nuevosRoleRecursos);
 
     // Devolver todos los RoleRecurso asignados al rol, incluyendo los nuevos
     return [...rol.roleRecursos, ...roleRecursosSaved];
   }
 
-  async actualizarRecursosARol(asignarRecursoDto: AsignarRecursoARolDto): Promise<RoleRecurso[]> {
+  async actualizarRecursosARol(
+    asignarRecursoDto: AsignarRecursoARolDto,
+  ): Promise<RoleRecurso[]> {
     const { rolId, recursosIds } = asignarRecursoDto;
     const rol = await this.roleRepository.findOne({
       where: { id: rolId },
       relations: ['roleRecursos', 'roleRecursos.recurso'],
     });
-  
+
     if (!rol) {
       throw new NotFoundException('Rol no encontrado');
     }
-  
+
     // Obtener los IDs de los recursos ya asignados al rol
-    const recursosAsignadosIds = rol.roleRecursos.map(rr => rr.recurso.id);
-  
+    const recursosAsignadosIds = rol.roleRecursos.map((rr) => rr.recurso.id);
+
     // Recursos a eliminar
-    const recursosAEliminar = rol.roleRecursos.filter(rr => !recursosIds.includes(rr.recurso.id));
-  
+    const recursosAEliminar = rol.roleRecursos.filter(
+      (rr) => !recursosIds.includes(rr.recurso.id),
+    );
+
     // Recursos nuevos a asignar
-    const nuevosRecursosIds = recursosIds.filter(id => !recursosAsignadosIds.includes(id));
-    const nuevosRecursos = await this.recursoRepository.find({ where: { id: In(nuevosRecursosIds) } });
-  
-    const nuevosRoleRecursos = nuevosRecursos.map(recurso => {
-      const roleRecurso = this.roleRecursoRepository.create({ role: rol, recurso: recurso });
+    const nuevosRecursosIds = recursosIds.filter(
+      (id) => !recursosAsignadosIds.includes(id),
+    );
+    const nuevosRecursos = await this.recursoRepository.find({
+      where: { id: In(nuevosRecursosIds) },
+    });
+
+    const nuevosRoleRecursos = nuevosRecursos.map((recurso) => {
+      const roleRecurso = this.roleRecursoRepository.create({
+        role: rol,
+        recurso: recurso,
+      });
       return roleRecurso;
     });
-  
+
     // Eliminar recursos
     await this.roleRecursoRepository.remove(recursosAEliminar);
-  
+
     // Guardar nuevos recursos
-    const roleRecursosSaved = await this.roleRecursoRepository.save(nuevosRoleRecursos);
-  
-    return [...rol.roleRecursos.filter(rr => recursosIds.includes(rr.recurso.id)), ...roleRecursosSaved];
+    await this.roleRecursoRepository.save(nuevosRoleRecursos);
+
+    const recursosRoles = await this.roleRecursoRepository.find({
+      where: { role: rol },
+      relations: ['recurso'],
+    });
+
+    // return [...rol.roleRecursos, ...roleRecursosSaved];
+    return [...recursosRoles];
   }
-  
+
   async findOneByNameRole(name: string): Promise<any> {
     //console.log('Name', name);
-    
+
     const rol = await this.roleRepository.findOne({
       where: { name: name },
       relations: ['roleRecursos', 'roleRecursos.recurso'],
     });
-    
+
     if (!rol) {
       throw new NotFoundException('Rol no encontrado');
     }
@@ -148,68 +176,76 @@ export class RolesService {
 
     return {
       ...rol,
-      roleRecursos: recursos.map(rr => rr.recurso),
+      roleRecursos: recursos.map((rr) => rr.recurso),
     };
   }
-  
+
   async findAll() {
     return this.roleRepository.find({});
   }
 
   async findAllResourcesRoles() {
-    const rolesRecursos = await this.roleRecursoRepository.find({ relations: ['role', 'recurso'] });
-    
+    const rolesRecursos = await this.roleRecursoRepository.find({
+      relations: ['role', 'recurso'],
+    });
+
     if (!rolesRecursos) {
       throw new NotFoundException('Roles no encontrados');
     }
 
-    const groupedRolesRecursos = rolesRecursos.reduce((acc, roleRecurso) => {
-      const role = roleRecurso.role;
-      const recurso = roleRecurso.recurso;
+    // console.log('RolesRecursos', rolesRecursos);
 
-      if (!acc[role.name]) {
-        acc[role.name] = {
-          ...role,
+    const rolesRecursosMaped = [];
+    rolesRecursos.forEach((value) => {
+      if (!rolesRecursosMaped.find((x) => x.id === value.role.id)) {
+        rolesRecursosMaped.push({
+          id: value.role.id,
+          name: value.role.name,
           recursos: [],
-        };
+        });
       }
-      acc[role.name].recursos.push(recurso);
-      return acc;
-    }, {});
 
-    return groupedRolesRecursos;
+      const index = rolesRecursosMaped.findIndex((x) => x.id === value.role.id);
+
+      if (index !== -1) {
+        rolesRecursosMaped[index].recursos.push({
+          id: value.recurso.id,
+          name: value.recurso.nombre_recurso,
+        });
+      }
+    });
+
+    // console.log('RolesMap', rolesRecursosMaped);
+
+    return rolesRecursosMaped;
   }
 
-  async findOne(id: number): Promise<any>{
+  async findOne(id: number): Promise<any> {
     if (!id) {
       throw new NotFoundException('ID no proporcionado');
     }
-    
-    const rol = await this.roleRepository.findOne(
-      { where: { id: id } }
-    );
-    
+
+    const rol = await this.roleRepository.findOne({ where: { id: id } });
+
     if (!rol) {
       throw new NotFoundException('Rol no encontrado');
     }
-    
+
     const recursos = await this.roleRecursoRepository.find({
       where: { role: rol },
       relations: ['recurso'],
     });
 
-
     return {
       ...rol,
-      roleRecursos: recursos.map(rr => rr.recurso),
+      roleRecursos: recursos.map((rr) => rr.recurso),
     };
   }
-  
-  async update(updateRoleDto: UpdateRoleDto) {
 
+  async update(updateRoleDto: UpdateRoleDto) {
     const { id, ...dataUpdate } = updateRoleDto;
 
-    const recurso = await this.roleRepository.findOne({where: {id: id}});
+    const recurso = await this.roleRepository.findOne({ where: { id: id } });
 
     if (!dataUpdate.name) {
       throw new BadRequestException('Nombre de rol no puede ser vacio');
@@ -218,24 +254,23 @@ export class RolesService {
     if (!recurso) {
       throw new BadRequestException('Rol no encontrado');
     }
-    
+
     if (dataUpdate.name) {
       dataUpdate.name = dataUpdate.name.toLowerCase().trim();
-      
+
       const roleExists = await this.roleRepository.findOne({
         where: { name: dataUpdate.name },
       });
-      
+
       if (roleExists) {
         throw new BadRequestException('Rol ya existe');
       }
-
     }
 
     if (dataUpdate.name === '') {
       throw new BadRequestException('Nombre de rol no puede ser vacio');
     }
-    
+
     return this.roleRepository.update(id, dataUpdate);
   }
 
@@ -247,13 +282,13 @@ export class RolesService {
     if (!role) {
       throw new NotFoundException('Rol no encontrado');
     }
-    
-    await this.roleRepository.remove(role);
 
-    // Enviar mensaje de exito
-    return {
-      message: 'Rol eliminado correctamente',
-    };
-    
+    // Desactivar los recursos del rol
+    try {
+      await this.roleRepository.update(id, { isactive: false });
+      return role;
+    } catch (error) {
+      throw new BadRequestException('Error al eliminar los recursos del rol');
+    }
   }
 }

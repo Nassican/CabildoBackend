@@ -15,6 +15,6 @@ import { Recurso } from '../resources/entities/resource.entity';
   ],
   controllers: [RolesController],
   providers: [RolesService],
-  exports: [RolesService]
+  exports: [RolesService],
 })
 export class RolesModule {}

@@ -1,8 +1,8 @@
-import { Request } from "express"
+import { Request } from 'express';
 
 export interface RequestWithUser extends Request {
-    user: {
-        num_documento: string,
-        roles: string[]
-    }
+  user: {
+    num_documento: string;
+    roles: string[];
+  };
 }

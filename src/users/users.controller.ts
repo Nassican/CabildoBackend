@@ -1,9 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Resource } from '../auth/decorators/resource.decorator';
 import { AuthGuard } from '../auth/guard/auth.guard';
-import { ResourceGuard } from '../auth/guard/resource.guard';
-import '../common/enum/resource.enum'
+import '../common/enum/resource.enum';
 import { Recursos } from '../common/enum/resource.enum';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
@@ -15,9 +21,7 @@ import { UpdateUserDto, ValidateUpdateUserDto } from './dto/update-user.dto';
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('id/:id')
   @UseGuards(AuthGuard)
@@ -61,7 +65,4 @@ export class UsersController {
     console.log('Entro a findAll');
     return this.usersService.findAll();
   }
-
-  
-
 }

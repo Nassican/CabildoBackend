@@ -16,6 +16,6 @@ import { JwtModule } from '@nestjs/jwt';
   ],
   controllers: [SuperadminController],
   providers: [SuperadminService],
-  exports: [SuperadminService]
+  exports: [SuperadminService],
 })
 export class SuperadminModule {}

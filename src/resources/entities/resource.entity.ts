@@ -9,6 +9,6 @@ export class Recurso {
   @Column({ unique: true })
   nombre_recurso: string;
 
-  @OneToMany(() => RoleRecurso, roleRecurso => roleRecurso.recurso)
+  @OneToMany(() => RoleRecurso, (roleRecurso) => roleRecurso.recurso)
   roleRecursos: RoleRecurso[];
 }

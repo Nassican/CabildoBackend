@@ -9,12 +9,10 @@ import { SuperadminModule } from './superadmin/superadmin.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(
-      {
-        isGlobal: true,
-        envFilePath: '.env'
-      }
-    ),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST,
@@ -29,7 +27,7 @@ import { SuperadminModule } from './superadmin/superadmin.module';
     AuthModule,
     RolesModule,
     ResourcesModule,
-    SuperadminModule
+    SuperadminModule,
   ],
   controllers: [],
   providers: [],

@@ -5,21 +5,18 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { RolesService } from '../roles/roles.service';
 import { Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { boolean } from 'zod';
 
 @Injectable()
 export class UsersService {
-  
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
-    private readonly rolesService: RolesService
-
+    private readonly rolesService: RolesService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const {rolesIds, ...dataInsert} = createUserDto;
+    const { rolesIds, ...dataInsert } = createUserDto;
 
     //console.log('RolesIds', rolesIds);
 
@@ -31,30 +28,32 @@ export class UsersService {
 
     //console.log('RolesUser', rolesUser);
 
-    let userToSave = this.userRepository.create({
+    const userToSave = this.userRepository.create({
       ...dataInsert,
       roles: rolesUser,
     });
 
     console.log('User', userToSave);
-  
+
     return this.userRepository.save(userToSave);
   }
 
   async updateUser(updateUserDto: UpdateUserDto) {
     const { num_documento, rolesIds, ...dataUpdate } = updateUserDto;
-    
+
     //console.log('DataUpdate', dataUpdate);
 
-
-    const user = await this.userRepository.findOne(
-      { where: { num_documento: num_documento }, relations: ['roles'] }
-    );
+    const user = await this.userRepository.findOne({
+      where: { num_documento: num_documento },
+      relations: ['roles'],
+    });
 
     //console.log('User', user);
 
     if (!user) {
-      throw new BadRequestException(`Usuario con número de documento ${num_documento} no encontrado`);
+      throw new BadRequestException(
+        `Usuario con número de documento ${num_documento} no encontrado`,
+      );
     }
 
     // Verificar que haya un cuerpo
@@ -65,7 +64,7 @@ export class UsersService {
     let hayCambios: boolean = true;
 
     if (dataUpdate.nombres === (user.nombres || '')) {
-      console.log("UPDATE " + dataUpdate.nombres + " ANTERIOR " + user.nombres)
+      console.log('UPDATE ' + dataUpdate.nombres + ' ANTERIOR ' + user.nombres);
       console.log('Nombres iguales');
       hayCambios = false;
     }
@@ -74,12 +73,16 @@ export class UsersService {
       hayCambios = false;
     }
     // Obtener los IDs de los roles actuales y nuevos
-    const userRolesIds = new Set(user.roles.map(role => role.id));
+    const userRolesIds = new Set(user.roles.map((role) => role.id));
     const newRolesIds = new Set(rolesIds || []);
 
     // Verificar si los nuevos roles están incluidos en los roles actuales
-    const rolesAdded = [...newRolesIds].some(roleId => !userRolesIds.has(roleId));
-    const rolesRemoved = [...userRolesIds].some(roleId => !newRolesIds.has(roleId));
+    const rolesAdded = [...newRolesIds].some(
+      (roleId) => !userRolesIds.has(roleId),
+    );
+    const rolesRemoved = [...userRolesIds].some(
+      (roleId) => !newRolesIds.has(roleId),
+    );
 
     if (rolesAdded || rolesRemoved) {
       console.log('Roles cambiados');
@@ -93,7 +96,6 @@ export class UsersService {
       throw new BadRequestException('No hay datos para actualizar');
     }
 
-    
     //console.log('RolesIds ', rolesIds);
     if (rolesIds) {
       const rolesUser = await this.rolesService.findByIds(rolesIds);
@@ -106,93 +108,129 @@ export class UsersService {
     user.nombres = dataUpdate.nombres ?? user.nombres;
     user.apellidos = dataUpdate.apellidos ?? user.apellidos;
 
-    console.log('Apunto de guardar')
+    console.log('Apunto de guardar');
     //guardar cambios del usuario
-    return this.userRepository.save(user)
+    return this.userRepository.save(user);
   }
 
   async findOneById(id: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id_usuario: id },
-      relations: ['roles']
+      relations: ['roles', 'roles.roleRecursos', 'roles.roleRecursos.recurso'],
     });
 
     if (!user) {
       //throw new BadRequestException(`Usuario con ID ${id} no encontrado`);
-      return null
+      return null;
     }
 
-    return user;
+    const userDB = await this.rolesAndRecursos(user);
+    return userDB;
   }
 
   async findOneByNumDoc(num_documento: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { num_documento: num_documento },
-      relations: ['roles']
+      relations: ['roles', 'roles.roleRecursos', 'roles.roleRecursos.recurso'],
     });
 
     if (!user) {
       //throw new BadRequestException(`Usuario con número de documento ${num_documento} no encontrado`);
-      return null
+      return null;
     }
 
-    return user
+    const userDB = await this.rolesAndRecursos(user);
+
+    return userDB;
+  }
+
+  private async rolesAndRecursos(user: User): Promise<User> {
+    // Recursos con id y name
+    const recursosIdName = user.roles.flatMap((role) => {
+      return role.roleRecursos.map((roleRecurso) => {
+        return {
+          id: roleRecurso.recurso.id,
+          name: roleRecurso.recurso.nombre_recurso,
+        };
+      });
+    });
+
+    // Eliminar repetidos recursosIdName
+
+    recursosIdName.forEach((recurso, index) => {
+      const indexRecurso = recursosIdName.findIndex(
+        (recursoFind) => recursoFind.id === recurso.id,
+      );
+      if (indexRecurso !== index) {
+        recursosIdName.splice(indexRecurso, 1);
+      }
+    });
+
+    // Usuario con roleRecursos eliminado
+    user.roles = user.roles.map((role) => {
+      delete role.roleRecursos;
+      return role;
+    });
+
+    // Retornar el usuario con los recursos que tiene acceso y el rol separado
+    const userDB = {
+      ...user,
+      recursos: recursosIdName,
+    };
+
+    return userDB;
   }
 
   async findOneByIdWithPassword(num_documento: string): Promise<User> {
     const user = this.userRepository.findOne({
-      where: { num_documento: num_documento},
-      select: ['id_usuario', 'num_documento', 'nombres', 'apellidos','password']
+      where: { num_documento: num_documento },
+      select: [
+        'id_usuario',
+        'num_documento',
+        'nombres',
+        'apellidos',
+        'password',
+      ],
     });
 
     if (!user) {
-      throw new BadRequestException(`Usuario con número de documento ${num_documento} no encontrado`);
+      throw new BadRequestException(
+        `Usuario con número de documento ${num_documento} no encontrado`,
+      );
     }
 
     return user;
-
   }
 
   // TODO: Quitar luego
   async findAll() {
     const user = await this.userRepository.find();
     const userRoles = await Promise.all(
-      user.map(user => this.getUserRoles(user.id_usuario))
+      user.map((user) => this.getUserRoles(user.id_usuario)),
     );
 
     const userDB = user.map((user, index) => {
       return {
         ...user,
-        roles: userRoles[index]
-      }
+        roles: userRoles[index],
+      };
     });
 
     //console.log('UserDB', userDB);
     return userDB;
   }
-  
-  
+
   async getUserRoles(userId: number): Promise<string[]> {
     const user = await this.userRepository.findOne({
       where: { id_usuario: userId },
       relations: ['roles'],
-    
     });
     if (!user) {
       throw new Error(`User with ID ${userId} not found`);
     }
 
-    const roles = user.roles.map(role => role.name);
+    const roles = user.roles.map((role) => role.name);
 
     return roles;
   }
-
-}
-
-// Función auxiliar para comparar arrays
-function arraysEqual(a: any[], b: any[]) {
-  return (
-    a.length === b.length &&
-    a.every((val, index) => val === b[index])
-  );
 }

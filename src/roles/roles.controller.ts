@@ -1,9 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto, ValidateCreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto, ValidateUpdateRoleDto } from './dto/update-role.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AsignarRecursoARolDto, ValidateAsignarRecursoARolDto } from './dto/asign-resource-to-rol.dto';
+import {
+  AsignarRecursoARolDto,
+  ValidateAsignarRecursoARolDto,
+} from './dto/asign-resource-to-rol.dto';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
@@ -21,17 +32,17 @@ export class RolesController {
     return this.rolesService.create(createRoleDto);
   }
 
-  @Post('assignres')
-  //@Auth(Recursos.ASSIGN_RESOURCE)
-  assignResourceToRole(@Body() asignarRecursoDto: AsignarRecursoARolDto) {
-    const validation = ValidateAsignarRecursoARolDto(asignarRecursoDto);
-    if (!validation.success) {
-      throw new Error(validation.error.message);
-    }
-    return this.rolesService.asignarRecursosARol(asignarRecursoDto);
-  }
+  // @Post('assignres')
+  // //@Auth(Recursos.ASSIGN_RESOURCE)
+  // assignResourceToRole(@Body() asignarRecursoDto: AsignarRecursoARolDto) {
+  //   const validation = ValidateAsignarRecursoARolDto(asignarRecursoDto);
+  //   if (!validation.success) {
+  //     throw new Error(validation.error.message);
+  //   }
+  //   return this.rolesService.asignarRecursosARol(asignarRecursoDto);
+  // }
 
-  @Patch('assignres')
+  @Post('assignres')
   updateResourceToRole(@Body() asignarRecursoDto: AsignarRecursoARolDto) {
     const validation = ValidateAsignarRecursoARolDto(asignarRecursoDto);
     if (!validation.success) {
@@ -66,7 +77,7 @@ export class RolesController {
     if (!validation.success) {
       throw new Error(validation.error.message);
     }
-    
+
     return this.rolesService.update(updateRoleDto);
   }
 

@@ -6,21 +6,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class SoloSuperadminGuard implements CanActivate {
-
-  constructor (
-    private readonly SuperadminService: SuperadminService,
+  constructor(
+    private readonly superadminService: SuperadminService,
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>
-  ){}
+    private readonly userRepo: Repository<User>,
+  ) {}
 
-  async canActivate(
-    context: ExecutionContext,
-  ): Promise<boolean> {
-
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const req = context.switchToHttp().getRequest();
       console.log('Request', req.user);
-      const isSuperadmin = await this.SuperadminService.isSuperadmin(req.user.num_documento);
+      const isSuperadmin = await this.superadminService.isSuperadmin(
+        req.user.num_documento,
+      );
       //Si el usuario es el superadmin, permitir acceso a todos los recursos
       if (isSuperadmin) {
         return true;

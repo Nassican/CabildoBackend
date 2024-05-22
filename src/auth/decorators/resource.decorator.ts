@@ -1,5 +1,5 @@
-import { SetMetadata } from "@nestjs/common";
+import { SetMetadata } from '@nestjs/common';
 
 export const Resource = (resource: string) => {
-    return SetMetadata('resource', resource);
+  return SetMetadata('resource', resource);
 };

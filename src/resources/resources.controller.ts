@@ -1,7 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ResourcesService } from './resources.service';
-import { CreateResourceDto, ValidateCreateResourceDto } from './dto/create-resource.dto';
-import { UpdateResourceDto, ValidateUpdateResourceDto } from './dto/update-resource.dto';
+import {
+  CreateResourceDto,
+  ValidateCreateResourceDto,
+} from './dto/create-resource.dto';
+import {
+  UpdateResourceDto,
+  ValidateUpdateResourceDto,
+} from './dto/update-resource.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Resources')
@@ -11,7 +25,7 @@ export class ResourcesController {
   constructor(private readonly resourcesService: ResourcesService) {}
 
   @Post()
-  create(@Body() createResourceDto: CreateResourceDto) {  
+  create(@Body() createResourceDto: CreateResourceDto) {
     const validation = ValidateCreateResourceDto(createResourceDto);
     if (!validation.success) {
       throw new Error(validation.error.message);
@@ -30,7 +44,7 @@ export class ResourcesController {
   }
 
   @Patch()
-  update(@Body() updateResourceDto: UpdateResourceDto){
+  update(@Body() updateResourceDto: UpdateResourceDto) {
     const validation = ValidateUpdateResourceDto(updateResourceDto);
     if (!validation.success) {
       throw new Error(validation.error.message);

@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post} from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { SuperadminService } from './superadmin.service';
 import { SoloSuperAdmin } from './decorators/superadmin.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';

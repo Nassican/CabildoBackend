@@ -8,8 +8,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { SuperadminService } from 'src/superadmin/superadmin.service';
 import { SuperadminModule } from 'src/superadmin/superadmin.module';
 import { SuperAdmin } from 'src/superadmin/entities/superadmin.entity';
-import { ResourceGuard } from 'src/auth/guard/resource.guard';
-import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 // importar UserRepository
 @Module({
@@ -18,7 +16,7 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
     TypeOrmModule.forFeature([SuperAdmin]),
     RolesModule,
     JwtModule,
-    forwardRef(() => SuperadminModule)
+    forwardRef(() => SuperadminModule),
   ],
   controllers: [UsersController],
   providers: [UsersService, SuperadminService],

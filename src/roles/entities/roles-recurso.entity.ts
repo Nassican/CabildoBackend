@@ -7,11 +7,11 @@ export class RoleRecurso {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Role, role => role.roleRecursos)
+  @ManyToOne(() => Role, (role) => role.roleRecursos)
   @JoinColumn({ name: 'role_id' })
   role: Role;
 
-  @ManyToOne(() => Recurso, recurso => recurso.roleRecursos)
+  @ManyToOne(() => Recurso, (recurso) => recurso.roleRecursos)
   @JoinColumn({ name: 'recurso_id' })
   recurso: Recurso;
 }
