@@ -1,20 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto, ValidateCreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto, ValidateUpdateRoleDto } from './dto/update-role.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import {
-  AsignarRecursoARolDto,
-  ValidateAsignarRecursoARolDto,
-} from './dto/asign-resource-to-rol.dto';
+import { AsignarRecursoARolDto, ValidateAsignarRecursoARolDto } from './dto/asign-resource-to-rol.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Recursos } from 'src/common/enum/resource.enum';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
@@ -22,8 +13,9 @@ import {
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
+  //@Auth(Recursos.ROLES)
   @Post()
-  //@Auth(Recursos.CREATE_ROLE)
+  @Auth(Recursos.CREATE_ROLE)
   create(@Body() createRoleDto: CreateRoleDto) {
     const validation = ValidateCreateRoleDto(createRoleDto);
     if (!validation.success) {
@@ -42,6 +34,7 @@ export class RolesController {
   //   return this.rolesService.asignarRecursosARol(asignarRecursoDto);
   // }
 
+  @Auth(Recursos.ROLES)
   @Post('assignres')
   updateResourceToRole(@Body() asignarRecursoDto: AsignarRecursoARolDto) {
     const validation = ValidateAsignarRecursoARolDto(asignarRecursoDto);
@@ -57,6 +50,7 @@ export class RolesController {
   }
 
   @Get()
+  @Auth(Recursos.ROLES)
   findAll() {
     return this.rolesService.findAll();
   }
@@ -84,5 +78,11 @@ export class RolesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.rolesService.remove(+id);
+  }
+
+  @Auth(Recursos.ROLES)
+  @Delete('bulk/delete')
+  async removeMany(@Body('ids') ids: number[]) {
+    return this.rolesService.removeMany(ids);
   }
 }

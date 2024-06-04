@@ -1,9 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import {
-  RegisterUserDto,
-  ValidateRegisterUserDto,
-} from './dto/register-user.dto';
+import { RegisterUserDto, ValidateRegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto, ValidateLoginUserDto } from './dto/login-user.dto';
 import { Auth } from './decorators/auth.decorator';
 import { Recursos } from '../common/enum/resource.enum';

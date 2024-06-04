@@ -51,9 +51,7 @@ export class UsersService {
     //console.log('User', user);
 
     if (!user) {
-      throw new BadRequestException(
-        `Usuario con número de documento ${num_documento} no encontrado`,
-      );
+      throw new BadRequestException(`Usuario con número de documento ${num_documento} no encontrado`);
     }
 
     // Verificar que haya un cuerpo
@@ -77,12 +75,8 @@ export class UsersService {
     const newRolesIds = new Set(rolesIds || []);
 
     // Verificar si los nuevos roles están incluidos en los roles actuales
-    const rolesAdded = [...newRolesIds].some(
-      (roleId) => !userRolesIds.has(roleId),
-    );
-    const rolesRemoved = [...userRolesIds].some(
-      (roleId) => !newRolesIds.has(roleId),
-    );
+    const rolesAdded = [...newRolesIds].some((roleId) => !userRolesIds.has(roleId));
+    const rolesRemoved = [...userRolesIds].some((roleId) => !newRolesIds.has(roleId));
 
     if (rolesAdded || rolesRemoved) {
       console.log('Roles cambiados');
@@ -155,15 +149,15 @@ export class UsersService {
       });
     });
 
-    // Eliminar repetidos recursosIdName
+    // Eliminar recursos duplicados
+    const recursosIdNameSet = new Set();
 
-    recursosIdName.forEach((recurso, index) => {
-      const indexRecurso = recursosIdName.findIndex(
-        (recursoFind) => recursoFind.id === recurso.id,
-      );
-      if (indexRecurso !== index) {
-        recursosIdName.splice(indexRecurso, 1);
+    const recursosIdNameSorted = recursosIdName.filter((recurso) => {
+      if (recursosIdNameSet.has(recurso.id)) {
+        return false;
       }
+      recursosIdNameSet.add(recurso.id);
+      return true;
     });
 
     // Usuario con roleRecursos eliminado
@@ -175,8 +169,10 @@ export class UsersService {
     // Retornar el usuario con los recursos que tiene acceso y el rol separado
     const userDB = {
       ...user,
-      recursos: recursosIdName,
+      recursos: recursosIdNameSorted,
     };
+
+    console.log('UserDB', userDB);
 
     return userDB;
   }
@@ -184,19 +180,11 @@ export class UsersService {
   async findOneByIdWithPassword(num_documento: string): Promise<User> {
     const user = this.userRepository.findOne({
       where: { num_documento: num_documento },
-      select: [
-        'id_usuario',
-        'num_documento',
-        'nombres',
-        'apellidos',
-        'password',
-      ],
+      select: ['id_usuario', 'num_documento', 'nombres', 'apellidos', 'password'],
     });
 
     if (!user) {
-      throw new BadRequestException(
-        `Usuario con número de documento ${num_documento} no encontrado`,
-      );
+      throw new BadRequestException(`Usuario con número de documento ${num_documento} no encontrado`);
     }
 
     return user;
@@ -205,9 +193,7 @@ export class UsersService {
   // TODO: Quitar luego
   async findAll() {
     const user = await this.userRepository.find();
-    const userRoles = await Promise.all(
-      user.map((user) => this.getUserRoles(user.id_usuario)),
-    );
+    const userRoles = await Promise.all(user.map((user) => this.getUserRoles(user.id_usuario)));
 
     const userDB = user.map((user, index) => {
       return {

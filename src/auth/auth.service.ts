@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -17,9 +13,7 @@ export class AuthService {
   ) {}
 
   async register(registerUserDto: RegisterUserDto) {
-    const user = await this.usersService.findOneByNumDoc(
-      registerUserDto.num_documento,
-    );
+    const user = await this.usersService.findOneByNumDoc(registerUserDto.num_documento);
     if (user) {
       throw new BadRequestException('User already exists');
     }
@@ -37,18 +31,13 @@ export class AuthService {
   }
 
   async login(loginUserDto: LoginUserDto) {
-    const user = await this.usersService.findOneByIdWithPassword(
-      loginUserDto.num_documento,
-    );
+    const user = await this.usersService.findOneByIdWithPassword(loginUserDto.num_documento);
 
     if (!user) {
       throw new UnauthorizedException('Credenciales Invalidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      loginUserDto.password,
-      user.password,
-    );
+    const isPasswordValid = await bcrypt.compare(loginUserDto.password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales Invalidas');
@@ -70,13 +59,7 @@ export class AuthService {
   // Logout function to delete the token from the user
   async removeToken() {}
 
-  async profile({
-    num_documento,
-    roles,
-  }: {
-    num_documento: string;
-    roles: string[];
-  }) {
+  async profile({ num_documento, roles }: { num_documento: string; roles: string[] }) {
     const userDB = await this.usersService.findOneByNumDoc(num_documento);
     return userDB;
   }

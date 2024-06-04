@@ -1,11 +1,5 @@
 import { User } from '../../users/entities/user.entity';
-import {
-  Column,
-  Entity,
-  ManyToMany,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { RoleRecurso } from './roles-recurso.entity';
 
 @Entity({ name: 'roles' })
@@ -15,9 +9,6 @@ export class Role {
 
   @Column({ unique: true })
   name: string;
-
-  @Column({ default: true })
-  isactive: boolean;
 
   @OneToMany(() => RoleRecurso, (roleRecurso) => roleRecurso.role)
   roleRecursos: RoleRecurso[];
