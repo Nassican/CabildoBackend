@@ -3,11 +3,12 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { In, Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
 
-import { CreateRoleDto } from './dto/create-role.dto';
+import { CreateRoleDto, CreateRoleDtoResource } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { RoleRecurso } from './entities/roles-recurso.entity';
 import { Recurso } from 'src/resources/entities/resource.entity';
 import { AsignarRecursoARolDto } from './dto/asign-resource-to-rol.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class RolesService {
@@ -20,6 +21,9 @@ export class RolesService {
 
     @InjectRepository(Recurso)
     private readonly recursoRepository: Repository<Recurso>,
+
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async create(createRoleDto: CreateRoleDto) {
@@ -36,6 +40,41 @@ export class RolesService {
     }
 
     return this.roleRepository.save(role);
+  }
+
+  async createRoleWithResources(createRoleDto: CreateRoleDtoResource) {
+    const role = this.roleRepository.create(createRoleDto);
+
+    console.log('Role', role);
+    console.log('Recursos', createRoleDto.recursosIds);
+
+    role.name = role.name.toLowerCase();
+
+    const roleExists = await this.roleRepository.findOne({
+      where: { name: role.name },
+    });
+
+    if (roleExists) {
+      throw new BadRequestException('Rol ya existe');
+    }
+
+    const roleSaved = await this.roleRepository.save(role);
+
+    if (createRoleDto.recursosIds.length > 0) {
+      const recursos = await this.recursoRepository.find({
+        where: { id: In(createRoleDto.recursosIds) },
+      });
+      const roleRecursos = recursos.map((recurso) => {
+        return this.roleRecursoRepository.create({
+          role: roleSaved,
+          recurso: recurso,
+        });
+      });
+
+      await this.roleRecursoRepository.save(roleRecursos);
+    }
+
+    return roleSaved;
   }
 
   async setRoleDefault() {
@@ -96,8 +135,16 @@ export class RolesService {
     return [...rol.roleRecursos, ...roleRecursosSaved];
   }
 
+  // Con esta funcion se actualizan los recursos y nombre de un rol
   async actualizarRecursosARol(asignarRecursoDto: AsignarRecursoARolDto): Promise<RoleRecurso[]> {
-    const { rolId, recursosIds } = asignarRecursoDto;
+    // Body de la petición
+    // { rolId: number, name: string, recursosIds: number[]}
+    // rolId es obligatorio
+    // name es opcional
+    // recursosIds es obligatorio aunque sea un arreglo vacio
+
+    // Modificar esta funcion para actualizar los roles
+    const { rolId, name, recursosIds } = asignarRecursoDto;
     const rol = await this.roleRepository.findOne({
       where: { id: rolId },
       relations: ['roleRecursos', 'roleRecursos.recurso'],
@@ -118,6 +165,12 @@ export class RolesService {
     const nuevosRecursos = await this.recursoRepository.find({
       where: { id: In(nuevosRecursosIds) },
     });
+
+    // Actualizar nombre en caso de que el nombre sea diferente al que ya tiene
+    if (name && name !== rol.name) {
+      rol.name = name;
+      await this.roleRepository.save(rol);
+    }
 
     const nuevosRoleRecursos = nuevosRecursos.map((recurso) => {
       const roleRecurso = this.roleRecursoRepository.create({
@@ -199,7 +252,7 @@ export class RolesService {
       };
     });
 
-    console.log('RolesMap', rolesRecursosMaped);
+    //console.log('RolesMap', rolesRecursosMaped);
 
     //console.log('RolesMap', rolesRecursos);
 
@@ -272,7 +325,7 @@ export class RolesService {
     }
 
     try {
-      await this.roleRepository.remove(role);
+      this.roleRepository.remove(role);
       // Enviar mensaje de exito
       return { message: 'Rol eliminado' };
     } catch (error) {
@@ -302,7 +355,22 @@ export class RolesService {
       throw new NotFoundException('Uno o más roles no encontrados');
     }
 
+    // Asegurarse de que los roles no estén asignados a usuarios, buscar la id de los roles asignados a usuarios
+    const rolesAssigned = await this.userRepository.find({
+      where: roles.map((role) => {
+        return { roles: { id: role.id } };
+      }),
+    });
+
+    if (rolesAssigned.length > 0) {
+      throw new BadRequestException('Uno o más roles están asignados a usuarios');
+    }
+
     try {
+      // Quitar recursos asignados al rol actualizando los recursos []
+      await Promise.all(
+        roles.map((role) => this.actualizarRecursosARol({ rolId: role.id, name: role.name, recursosIds: [] })),
+      );
       await this.roleRepository.remove(roles);
       return { message: 'Roles eliminados' };
     } catch (error) {

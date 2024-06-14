@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RolesService } from './roles.service';
-import { CreateRoleDto, ValidateCreateRoleDto } from './dto/create-role.dto';
+import { CreateRoleDtoResource, ValidateCreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto, ValidateUpdateRoleDto } from './dto/update-role.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AsignarRecursoARolDto, ValidateAsignarRecursoARolDto } from './dto/asign-resource-to-rol.dto';
@@ -16,12 +16,13 @@ export class RolesController {
   //@Auth(Recursos.ROLES)
   @Post()
   @Auth(Recursos.CREATE_ROLE)
-  create(@Body() createRoleDto: CreateRoleDto) {
+  create(@Body() createRoleDto: CreateRoleDtoResource) {
     const validation = ValidateCreateRoleDto(createRoleDto);
     if (!validation.success) {
+      console.log('Error en la validación');
       throw new Error(validation.error.message);
     }
-    return this.rolesService.create(createRoleDto);
+    return this.rolesService.createRoleWithResources(createRoleDto);
   }
 
   // @Post('assignres')

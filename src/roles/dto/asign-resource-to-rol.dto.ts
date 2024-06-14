@@ -1,4 +1,4 @@
-import { IsArray, IsNumber } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 import * as z from 'zod';
 
 const zAsignarRecursoARolDto = z.object({
@@ -9,6 +9,10 @@ const zAsignarRecursoARolDto = z.object({
 export class AsignarRecursoARolDto {
   @IsNumber()
   rolId: number;
+
+  @IsString()
+  @IsOptional()
+  name: string;
 
   @IsArray()
   @IsNumber({}, { each: true })
